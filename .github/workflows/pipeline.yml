@@ -1,0 +1,23 @@
+name: Docker Image CI
+
+on: [push]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+ 
+    steps:
+    - uses: actions/checkout@v1
+    - name: Build the Docker image
+      run: docker build . --tag app:latest
+    - name: Test API
+      run: |
+        set -e
+        set -o pipefail
+        cd api_tests
+        docker-compose run tests || true
+        docker-compose run --entrypoint /bin/cat app /app/test-results.xml > ../test-results.xml
+    - name: Pubish test results
+      run: |
+        cat test-results.xml
+        cat api_tests/results/api-test-results.xml
